@@ -23,6 +23,9 @@
  */
 package org.jenkinsci.remoting.engine;
 
+import hudson.remoting.Channel;
+import hudson.remoting.ChannelBuilder;
+import hudson.remoting.EngineListenerSplitter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,12 +35,19 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.util.Date;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -60,12 +70,19 @@ public class JnlpProtocol2Test {
     private static final Date THE_DATE = new Date();
 
     private JnlpProtocol2 protocol;
-    @Mock private DataOutputStream outputStream;
-    @Mock private BufferedInputStream inputStream;
+    @Mock private Socket mockSocket;
+    @Mock private ChannelBuilder mockChannelBuilder;
+    @Mock private Channel mockChannel;
+    @Mock private OutputStream mockOutputStream;
+    @Mock private InputStream mockInputStream;
+    @Mock private DataOutputStream mockDataOutputStream;
+    @Mock private BufferedOutputStream mockBufferedOutputStream;
+    @Mock private BufferedInputStream mockBufferedInputStream;
+    @Mock private EngineListenerSplitter mockEvents;
 
     @Before
     public void setUp() throws Exception {
-        protocol = new JnlpProtocol2(SECRET, SLAVE_NAME);
+        protocol = new JnlpProtocol2(SECRET, SLAVE_NAME, mockEvents);
     }
 
     @Test
@@ -74,7 +91,7 @@ public class JnlpProtocol2Test {
     }
 
     @Test
-    public void testHandshakeError() throws Exception {
+    public void testPerformHandshakeFails() throws Exception {
         // The date comment when writing properties to stream should be the
         // same in the scope of the tests.
         whenNew(Date.class).withNoArguments().thenReturn(THE_DATE);
@@ -86,16 +103,16 @@ public class JnlpProtocol2Test {
         expectedProperties.store(expectedPropertiesStream, null);
 
         mockStatic(EngineUtil.class);
-        when(EngineUtil.readLine(inputStream)).thenReturn("error");
+        when(EngineUtil.readLine(mockBufferedInputStream)).thenReturn("error");
 
-        assertEquals("error", protocol.performHandshake(outputStream, inputStream));
+        assertFalse(protocol.performHandshake(mockDataOutputStream, mockBufferedInputStream));
 
-        verify(outputStream).writeUTF("Protocol:JNLP2-connect");
-        verify(outputStream).writeUTF(expectedPropertiesStream.toString("UTF-8"));
+        verify(mockDataOutputStream).writeUTF("Protocol:JNLP2-connect");
+        verify(mockDataOutputStream).writeUTF(expectedPropertiesStream.toString("UTF-8"));
     }
 
     @Test
-    public void testHandshakeSuccess() throws Exception {
+    public void testPerformHandshakeSucceeds() throws Exception {
         // The date comment when writing properties to stream should be the
         // same in the scope of the tests.
         whenNew(Date.class).withNoArguments().thenReturn(THE_DATE);
@@ -111,14 +128,14 @@ public class JnlpProtocol2Test {
         responseProperties.put(JnlpProtocol2.COOKIE_KEY, COOKIE);
 
         mockStatic(EngineUtil.class);
-        when(EngineUtil.readLine(inputStream)).thenReturn(JnlpProtocol.GREETING_SUCCESS);
-        when(EngineUtil.readResponseHeaders(inputStream)).thenReturn(responseProperties);
+        when(EngineUtil.readLine(mockBufferedInputStream)).thenReturn(JnlpProtocol.GREETING_SUCCESS);
+        when(EngineUtil.readResponseHeaders(mockBufferedInputStream)).thenReturn(responseProperties);
 
-        assertEquals(JnlpProtocol.GREETING_SUCCESS, protocol.performHandshake(outputStream, inputStream));
+        assertTrue(protocol.performHandshake(mockDataOutputStream, mockBufferedInputStream));
         assertEquals(COOKIE, protocol.getCookie());
 
-        verify(outputStream).writeUTF("Protocol:JNLP2-connect");
-        verify(outputStream).writeUTF(expectedPropertiesStream.toString("UTF-8"));
+        verify(mockDataOutputStream).writeUTF("Protocol:JNLP2-connect");
+        verify(mockDataOutputStream).writeUTF(expectedPropertiesStream.toString("UTF-8"));
     }
 
     @Test
@@ -148,19 +165,30 @@ public class JnlpProtocol2Test {
         responseProperties2.put(JnlpProtocol2.COOKIE_KEY, COOKIE2);
 
         mockStatic(EngineUtil.class);
-        InOrder order = inOrder(outputStream);
-        when(EngineUtil.readLine(inputStream)).thenReturn(JnlpProtocol.GREETING_SUCCESS);
-        when(EngineUtil.readResponseHeaders(inputStream)).thenReturn(responseProperties)
+        InOrder order = inOrder(mockDataOutputStream);
+        when(EngineUtil.readLine(mockBufferedInputStream)).thenReturn(JnlpProtocol.GREETING_SUCCESS);
+        when(EngineUtil.readResponseHeaders(mockBufferedInputStream)).thenReturn(responseProperties)
                 .thenReturn(responseProperties2);
 
-        assertEquals(JnlpProtocol.GREETING_SUCCESS, protocol.performHandshake(outputStream, inputStream));
+        assertTrue(protocol.performHandshake(mockDataOutputStream, mockBufferedInputStream));
         assertEquals(COOKIE, protocol.getCookie());
-        assertEquals(JnlpProtocol.GREETING_SUCCESS, protocol.performHandshake(outputStream, inputStream));
+        assertTrue(protocol.performHandshake(mockDataOutputStream, mockBufferedInputStream));
         assertEquals(COOKIE2, protocol.getCookie());
 
-        order.verify(outputStream).writeUTF("Protocol:JNLP2-connect");
-        order.verify(outputStream).writeUTF(expectedPropertiesStream.toString("UTF-8"));
-        order.verify(outputStream).writeUTF("Protocol:JNLP2-connect");
-        order.verify(outputStream).writeUTF(expectedPropertiesStream2.toString("UTF-8"));
+        order.verify(mockDataOutputStream).writeUTF("Protocol:JNLP2-connect");
+        order.verify(mockDataOutputStream).writeUTF(expectedPropertiesStream.toString("UTF-8"));
+        order.verify(mockDataOutputStream).writeUTF("Protocol:JNLP2-connect");
+        order.verify(mockDataOutputStream).writeUTF(expectedPropertiesStream2.toString("UTF-8"));
+    }
+
+    @Test
+    public void testBuildChannel() throws Exception {
+        when(mockSocket.getOutputStream()).thenReturn(mockOutputStream);
+        when(mockSocket.getInputStream()).thenReturn(mockInputStream);
+        whenNew(BufferedOutputStream.class).withArguments(mockOutputStream).thenReturn(mockBufferedOutputStream);
+        whenNew(BufferedInputStream.class).withArguments(mockInputStream).thenReturn(mockBufferedInputStream);
+        when(mockChannelBuilder.build(mockBufferedInputStream, mockBufferedOutputStream)).thenReturn(mockChannel);
+
+        assertSame(mockChannel, protocol.buildChannel(mockSocket, mockChannelBuilder));
     }
 }

@@ -23,6 +23,8 @@
  */
 package org.jenkinsci.remoting.engine;
 
+import hudson.remoting.EngineListenerSplitter;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -42,10 +44,11 @@ public class JnlpProtocolFactory {
      *
      * The protocols should be tried in the order they are given.
      */
-    public static List<JnlpProtocol> createProtocols(String secretKey, String slaveName) {
+    public static List<JnlpProtocol> createProtocols(String secretKey, String slaveName,
+            EngineListenerSplitter events) {
         return Arrays.asList(
-            new JnlpProtocol2(secretKey, slaveName),
-            new JnlpProtocol1(secretKey, slaveName)
+            new JnlpProtocol3(secretKey, slaveName, events),
+            new JnlpProtocol1(secretKey, slaveName, events)
         );
     }
 }

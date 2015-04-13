@@ -57,6 +57,15 @@ public class EngineUtil {
         }
     }
 
+    public static String readChars(InputStream inputStream, int len) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        for (int i = 0; i < len; i++) {
+            byteArrayOutputStream.write(inputStream.read());
+        }
+
+        return byteArrayOutputStream.toString("UTF-8");
+    }
+
     /**
      * Read headers from a response.
      *
