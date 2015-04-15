@@ -58,8 +58,8 @@ class JnlpProtocol2 extends JnlpProtocol {
      */
     private String cookie;
 
-    JnlpProtocol2(String secretKey, String slaveName, EngineListenerSplitter events) {
-        super(secretKey, slaveName, events);
+    JnlpProtocol2(String slaveName, String slaveSecret, EngineListenerSplitter events) {
+        super(slaveName, slaveSecret, events);
     }
 
     @Override
@@ -97,7 +97,7 @@ class JnlpProtocol2 extends JnlpProtocol {
 
     private void initiateHandshake(DataOutputStream outputStream) throws IOException {
         Properties props = new Properties();
-        props.put(SECRET_KEY, secretKey);
+        props.put(SECRET_KEY, slaveSecret);
         props.put(SLAVE_NAME_KEY, slaveName);
 
         // If there is a cookie send that as well.

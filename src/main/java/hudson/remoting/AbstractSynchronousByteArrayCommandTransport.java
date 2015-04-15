@@ -38,6 +38,7 @@ public abstract class AbstractSynchronousByteArrayCommandTransport extends Synch
 
     @Override
     public void write(Command cmd, boolean last) throws IOException {
+        System.out.println("-----------------> transport.write: " + cmd.toString());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
         cmd.writeTo(channel,oos);

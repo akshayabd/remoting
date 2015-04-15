@@ -78,6 +78,7 @@ abstract class Command implements Serializable {
     protected abstract void execute(Channel channel);
     
     void writeTo(Channel channel, ObjectOutputStream oos) throws IOException {
+        System.out.println("-----------------> command.writeTo: " + channel.getName());
         Channel old = Channel.setCurrent(channel);
         try {
             oos.writeObject(this);

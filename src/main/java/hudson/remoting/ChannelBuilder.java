@@ -381,12 +381,15 @@ public class ChannelBuilder {
     protected CommandTransport makeTransport(InputStream is, OutputStream os, Mode mode, Capability cap) throws IOException {
         FlightRecorderInputStream fis = new FlightRecorderInputStream(is);
 
-        if (cap.supportsChunking())
+        if (cap.supportsChunking()) {
+            System.out.println("----------------------> ChunkedCommandTransport");
             return new ChunkedCommandTransport(cap, mode.wrap(fis), mode.wrap(os), os);
+        }
         else {
             ObjectOutputStream oos = new ObjectOutputStream(mode.wrap(os));
             oos.flush();    // make sure that stream preamble is sent to the other end. avoids dead-lock
 
+            System.out.println("----------------------> ClassicCommandTransport");
             return new ClassicCommandTransport(
                     new ObjectInputStreamEx(mode.wrap(fis),getBaseLoader()),
                     oos,fis,os,cap);

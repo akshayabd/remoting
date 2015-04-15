@@ -43,12 +43,16 @@ public class JnlpProtocolFactory {
      * connecting to the master.
      *
      * The protocols should be tried in the order they are given.
+     *
+     * @param slaveName The name of the registered slave.
+     * @param slaveSecret The secret associated with the slave.
+     * @param events The {@link EngineListenerSplitter} to use for logging.
      */
-    public static List<JnlpProtocol> createProtocols(String secretKey, String slaveName,
+    public static List<JnlpProtocol> createProtocols(String slaveName, String slaveSecret,
             EngineListenerSplitter events) {
         return Arrays.asList(
-            new JnlpProtocol3(secretKey, slaveName, events),
-            new JnlpProtocol1(secretKey, slaveName, events)
+            new JnlpProtocol3(slaveName, slaveSecret, events),
+            new JnlpProtocol1(slaveName, slaveSecret, events)
         );
     }
 }

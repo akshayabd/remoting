@@ -41,13 +41,13 @@ import java.net.Socket;
  */
 public abstract class JnlpProtocol {
 
-    protected final String secretKey;
     protected final String slaveName;
+    protected final String slaveSecret;
     protected final EngineListenerSplitter events;
 
-    JnlpProtocol(String secretKey, String slaveName, EngineListenerSplitter events) {
-        this.secretKey = secretKey;
+    JnlpProtocol(String slaveName, String slaveSecret, EngineListenerSplitter events) {
         this.slaveName = slaveName;
+        this.slaveSecret = slaveSecret;
         this.events = events;
     }
 

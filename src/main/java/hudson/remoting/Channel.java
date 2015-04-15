@@ -551,6 +551,7 @@ public class Channel implements VirtualChannel, IChannel, Closeable {
         if(logger.isLoggable(Level.FINE))
             logger.fine("Send "+cmd);
 
+        System.out.println("------------------> Channel.send()");
         transport.write(cmd, cmd instanceof CloseCommand);
         commandsSent++;
     }

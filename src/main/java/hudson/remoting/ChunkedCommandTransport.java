@@ -42,8 +42,11 @@ class ChunkedCommandTransport extends AbstractSynchronousByteArrayCommandTranspo
 
     @Override
     public void writeBlock(Channel channel, byte[] payload) throws IOException {
+        System.out.println("------------------> ChunkedCommandTransport.writeBlock(): " + payload.length);
         out.write(payload);
+        System.out.println("------------------> sending break");
         out.sendBreak();
+        System.out.println("------------------> break sent");
     }
 
     @Override

@@ -47,8 +47,8 @@ import java.net.Socket;
  */
 class JnlpProtocol1 extends JnlpProtocol {
 
-    JnlpProtocol1(String secretKey, String slaveName, EngineListenerSplitter events) {
-        super(secretKey, slaveName, events);
+    JnlpProtocol1(String slaveName, String slaveSecret, EngineListenerSplitter events) {
+        super(slaveName, slaveSecret, events);
     }
 
     @Override
@@ -61,7 +61,7 @@ class JnlpProtocol1 extends JnlpProtocol {
             BufferedInputStream inputStream) throws IOException {
         // Initiate the handshake.
         outputStream.writeUTF(PROTOCOL_PREFIX + NAME);
-        outputStream.writeUTF(secretKey);
+        outputStream.writeUTF(slaveSecret);
         outputStream.writeUTF(slaveName);
 
         // Check if the server accepted.
