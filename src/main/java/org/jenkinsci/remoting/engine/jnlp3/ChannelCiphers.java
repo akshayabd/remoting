@@ -6,7 +6,8 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * Comment here.
+ * {@link javax.crypto.Cipher}s that will be used to construct an encrypted
+ * {@link hudson.remoting.Channel} after a successful handshake.
  */
 public class ChannelCiphers {
 
@@ -42,6 +43,11 @@ public class ChannelCiphers {
         return create(CipherUtils.generate128BitKey(), CipherUtils.generate128BitKey());
     }
 
+    /**
+     * Creates a pair of AES symmetric key {@link javax.crypto.Cipher}s using
+     * the given AES key and {@link javax.crypto.spec.IvParameterSpec} key.
+     * @throws Exception If there is a problem constructing the ciphers.
+     */
     public static ChannelCiphers create(byte[] aesKey, byte[] specKey) throws Exception {
         SecretKey secretKey = new SecretKeySpec(aesKey, "AES");
         IvParameterSpec spec = new IvParameterSpec(specKey);

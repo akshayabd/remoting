@@ -10,7 +10,8 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.spec.KeySpec;
 
 /**
- * Comment here.
+ * {@link javax.crypto.Cipher}s that will be used to during the handshake
+ * process for JNLP3 protocol.
  */
 public class HandshakeCiphers {
 
@@ -30,18 +31,46 @@ public class HandshakeCiphers {
         return spec.getIV();
     }
 
+    /**
+     * Encrypt a message that will be sent during the handshake process.
+     *
+     * @param raw The raw message to encrypt.
+     * @throws Exception If there is an issue encrypting the message.
+     */
     public String encrypt(String raw) throws Exception {
         String encrypted = new String(encryptCipher.doFinal(raw.getBytes("UTF-8")), "ISO-8859-1");
         encryptCipher.init(Cipher.ENCRYPT_MODE, secretKey, spec);
         return encrypted;
     }
 
+    /**
+     * Decrypt a message that was received during the handshake process.
+     *
+     * @param encrypted The message to decrypt.
+     * @throws Exception If there is an issue decrypting the message.
+     */
     public String decrypt(String encrypted) throws Exception {
         String raw = new String(decryptCipher.doFinal(encrypted.getBytes("ISO-8859-1")), "UTF-8");
         decryptCipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
         return raw;
     }
 
+    /**
+     * Create a pair of ciphers that will be used during the handshake process.
+     *
+     * <p>The slave name and slave secret are used to create a
+     * {@link PBEKeySpec} which is then used to create the ciphers. If a
+     * specKey is not provided one will be generated.
+     *
+     * <p>The person initiating the handshake would usually let a specKey be
+     * generated and send that to the other participant so they will be able
+     * to create identical ciphers.
+     *
+     * @param slaveName The slave for which the handshake is taking place.
+     * @param slaveSecret The slave secret.
+     * @param specKey The spec key to use.
+     * @throws Exception If there is a problem creating the ciphers.
+     */
     public static HandshakeCiphers create(
             String slaveName, String slaveSecret, @Nullable byte[] specKey) throws Exception {
         if (specKey == null) {
