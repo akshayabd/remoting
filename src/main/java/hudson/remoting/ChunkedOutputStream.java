@@ -90,11 +90,8 @@ class ChunkedOutputStream extends OutputStream {
     }
 
     private void sendFrame(boolean hasMore) throws IOException {
-        System.out.println("------------------> ChunkedOutputStream.sendFrame()");
         base.write(ChunkHeader.pack(size,hasMore));
-        System.out.println("------------------> ChunkedOutputStream.sendFrame() wrote header");
         base.write(buf,0,size);
-        System.out.println("------------------> ChunkedOutputStream.sendFrame() wrote frame");
         size = 0;
     }
 }
