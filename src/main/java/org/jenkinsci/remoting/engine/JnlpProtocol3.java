@@ -145,8 +145,10 @@ public class JnlpProtocol3 extends JnlpProtocol {
         }
         outputStream.writeUTF(GREETING_SUCCESS);
         try {
-            outputStream.writeUTF(handshakeCiphers.encrypt(CipherUtils.keyToString(channelCiphers.getAesKey())));
-            outputStream.writeUTF(handshakeCiphers.encrypt(CipherUtils.keyToString(channelCiphers.getSpecKey())));
+            outputStream.writeUTF(handshakeCiphers.encrypt(
+                    CipherUtils.keyToString(channelCiphers.getAesKey())));
+            outputStream.writeUTF(handshakeCiphers.encrypt(
+                    CipherUtils.keyToString(channelCiphers.getSpecKey())));
         } catch (Exception e) {
             events.status(NAME + ": Failed to encrypt channel ciphers", e);
             return false;
@@ -171,7 +173,8 @@ public class JnlpProtocol3 extends JnlpProtocol {
     }
 
     private boolean initiateHandshakeWithChallenge(
-            String challenge, DataOutputStream outputStream, HandshakeCiphers handshakeCiphers) throws IOException {
+            String challenge, DataOutputStream outputStream,
+            HandshakeCiphers handshakeCiphers) throws IOException {
         String encryptedChallenge = null;
         try {
             encryptedChallenge = handshakeCiphers.encrypt(challenge);
@@ -198,9 +201,11 @@ public class JnlpProtocol3 extends JnlpProtocol {
     }
 
     private boolean verifyChallengeResponse(
-            String challenge, BufferedInputStream inputStream, HandshakeCiphers handshakeCiphers) throws IOException {
+            String challenge, BufferedInputStream inputStream,
+            HandshakeCiphers handshakeCiphers) throws IOException {
         Integer challengeResponseLength = Integer.parseInt(EngineUtil.readLine(inputStream));
-        String encryptedChallengeResponse = EngineUtil.readChars(inputStream, challengeResponseLength);
+        String encryptedChallengeResponse = EngineUtil.readChars(
+                inputStream, challengeResponseLength);
         String challengeResponse = null;
         try {
             challengeResponse = handshakeCiphers.decrypt(encryptedChallengeResponse);
@@ -216,7 +221,8 @@ public class JnlpProtocol3 extends JnlpProtocol {
 
         // The master should have reversed the challenge phrase (minus the prefix).
         if (!challenge.substring(CHALLENGE_PREFIX.length()).equals(
-                new StringBuilder(challengeResponse.substring(CHALLENGE_PREFIX.length())).reverse().toString())) {
+                new StringBuilder(challengeResponse.substring(CHALLENGE_PREFIX.length()))
+                        .reverse().toString())) {
             events.status("Master authentication failed");
             return false;
         }

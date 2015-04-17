@@ -8,6 +8,8 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * {@link javax.crypto.Cipher}s that will be used to construct an encrypted
  * {@link hudson.remoting.Channel} after a successful handshake.
+ *
+ * @author Akshay Dayal
  */
 public class ChannelCiphers {
 
@@ -39,6 +41,12 @@ public class ChannelCiphers {
         return decryptCipher;
     }
 
+    /**
+     * Create a pair of AES symmetric key {@link javax.crypto.Cipher}s using
+     * randomly generated keys.
+     *
+     * @throws Exception If there is a problem constructing the ciphers.
+     */
     public static ChannelCiphers create() throws Exception {
         return create(CipherUtils.generate128BitKey(), CipherUtils.generate128BitKey());
     }
@@ -46,6 +54,7 @@ public class ChannelCiphers {
     /**
      * Creates a pair of AES symmetric key {@link javax.crypto.Cipher}s using
      * the given AES key and {@link javax.crypto.spec.IvParameterSpec} key.
+     *
      * @throws Exception If there is a problem constructing the ciphers.
      */
     public static ChannelCiphers create(byte[] aesKey, byte[] specKey) throws Exception {

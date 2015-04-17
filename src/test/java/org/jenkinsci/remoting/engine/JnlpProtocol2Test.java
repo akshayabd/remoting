@@ -49,7 +49,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
@@ -69,7 +68,6 @@ public class JnlpProtocol2Test {
     private static final String COOKIE2 = "some-other-cookie";
     private static final Date THE_DATE = new Date();
 
-    private JnlpProtocol2 protocol;
     @Mock private Socket mockSocket;
     @Mock private ChannelBuilder mockChannelBuilder;
     @Mock private Channel mockChannel;
@@ -79,10 +77,13 @@ public class JnlpProtocol2Test {
     @Mock private BufferedOutputStream mockBufferedOutputStream;
     @Mock private BufferedInputStream mockBufferedInputStream;
     @Mock private EngineListenerSplitter mockEvents;
+    private JnlpProtocol2 protocol;
+    private InOrder inOrder;
 
     @Before
     public void setUp() throws Exception {
-        protocol = new JnlpProtocol2(SECRET, SLAVE_NAME, mockEvents);
+        protocol = new JnlpProtocol2(SLAVE_NAME, SECRET, mockEvents);
+        inOrder = inOrder(mockDataOutputStream);
     }
 
     @Test
@@ -107,8 +108,8 @@ public class JnlpProtocol2Test {
 
         assertFalse(protocol.performHandshake(mockDataOutputStream, mockBufferedInputStream));
 
-        verify(mockDataOutputStream).writeUTF("Protocol:JNLP2-connect");
-        verify(mockDataOutputStream).writeUTF(expectedPropertiesStream.toString("UTF-8"));
+        inOrder.verify(mockDataOutputStream).writeUTF("Protocol:JNLP2-connect");
+        inOrder.verify(mockDataOutputStream).writeUTF(expectedPropertiesStream.toString("UTF-8"));
     }
 
     @Test
@@ -134,8 +135,8 @@ public class JnlpProtocol2Test {
         assertTrue(protocol.performHandshake(mockDataOutputStream, mockBufferedInputStream));
         assertEquals(COOKIE, protocol.getCookie());
 
-        verify(mockDataOutputStream).writeUTF("Protocol:JNLP2-connect");
-        verify(mockDataOutputStream).writeUTF(expectedPropertiesStream.toString("UTF-8"));
+        inOrder.verify(mockDataOutputStream).writeUTF("Protocol:JNLP2-connect");
+        inOrder.verify(mockDataOutputStream).writeUTF(expectedPropertiesStream.toString("UTF-8"));
     }
 
     @Test
@@ -165,7 +166,6 @@ public class JnlpProtocol2Test {
         responseProperties2.put(JnlpProtocol2.COOKIE_KEY, COOKIE2);
 
         mockStatic(EngineUtil.class);
-        InOrder order = inOrder(mockDataOutputStream);
         when(EngineUtil.readLine(mockBufferedInputStream)).thenReturn(JnlpProtocol.GREETING_SUCCESS);
         when(EngineUtil.readResponseHeaders(mockBufferedInputStream)).thenReturn(responseProperties)
                 .thenReturn(responseProperties2);
@@ -175,10 +175,10 @@ public class JnlpProtocol2Test {
         assertTrue(protocol.performHandshake(mockDataOutputStream, mockBufferedInputStream));
         assertEquals(COOKIE2, protocol.getCookie());
 
-        order.verify(mockDataOutputStream).writeUTF("Protocol:JNLP2-connect");
-        order.verify(mockDataOutputStream).writeUTF(expectedPropertiesStream.toString("UTF-8"));
-        order.verify(mockDataOutputStream).writeUTF("Protocol:JNLP2-connect");
-        order.verify(mockDataOutputStream).writeUTF(expectedPropertiesStream2.toString("UTF-8"));
+        inOrder.verify(mockDataOutputStream).writeUTF("Protocol:JNLP2-connect");
+        inOrder.verify(mockDataOutputStream).writeUTF(expectedPropertiesStream.toString("UTF-8"));
+        inOrder.verify(mockDataOutputStream).writeUTF("Protocol:JNLP2-connect");
+        inOrder.verify(mockDataOutputStream).writeUTF(expectedPropertiesStream2.toString("UTF-8"));
     }
 
     @Test

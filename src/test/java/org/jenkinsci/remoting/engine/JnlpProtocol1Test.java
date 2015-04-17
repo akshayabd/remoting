@@ -29,6 +29,7 @@ import hudson.remoting.EngineListenerSplitter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -44,7 +45,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.inOrder;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
@@ -61,7 +62,6 @@ public class JnlpProtocol1Test {
     private static final String SECRET = "secret";
     private static final String SLAVE_NAME = "slave-name";
 
-    private JnlpProtocol1 protocol;
     @Mock private Socket mockSocket;
     @Mock private ChannelBuilder mockChannelBuilder;
     @Mock private Channel mockChannel;
@@ -71,10 +71,13 @@ public class JnlpProtocol1Test {
     @Mock private BufferedOutputStream mockBufferedOutputStream;
     @Mock private BufferedInputStream mockBufferedInputStream;
     @Mock private EngineListenerSplitter mockEvents;
+    private JnlpProtocol1 protocol;
+    private InOrder inOrder;
 
     @Before
     public void setUp() throws Exception {
-        protocol = new JnlpProtocol1(SECRET, SLAVE_NAME, mockEvents);
+        protocol = new JnlpProtocol1(SLAVE_NAME, SECRET, mockEvents);
+        inOrder = inOrder(mockDataOutputStream);
     }
 
     @Test
@@ -89,9 +92,9 @@ public class JnlpProtocol1Test {
 
         assertFalse(protocol.performHandshake(mockDataOutputStream, mockBufferedInputStream));
 
-        verify(mockDataOutputStream).writeUTF("Protocol:JNLP-connect");
-        verify(mockDataOutputStream).writeUTF(SECRET);
-        verify(mockDataOutputStream).writeUTF(SLAVE_NAME);
+        inOrder.verify(mockDataOutputStream).writeUTF("Protocol:JNLP-connect");
+        inOrder.verify(mockDataOutputStream).writeUTF(SECRET);
+        inOrder.verify(mockDataOutputStream).writeUTF(SLAVE_NAME);
     }
 
     @Test
@@ -101,9 +104,9 @@ public class JnlpProtocol1Test {
 
         assertTrue(protocol.performHandshake(mockDataOutputStream, mockBufferedInputStream));
 
-        verify(mockDataOutputStream).writeUTF("Protocol:JNLP-connect");
-        verify(mockDataOutputStream).writeUTF(SECRET);
-        verify(mockDataOutputStream).writeUTF(SLAVE_NAME);
+        inOrder.verify(mockDataOutputStream).writeUTF("Protocol:JNLP-connect");
+        inOrder.verify(mockDataOutputStream).writeUTF(SECRET);
+        inOrder.verify(mockDataOutputStream).writeUTF(SLAVE_NAME);
     }
 
     @Test

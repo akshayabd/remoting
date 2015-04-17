@@ -12,6 +12,8 @@ import java.security.spec.KeySpec;
 /**
  * {@link javax.crypto.Cipher}s that will be used to during the handshake
  * process for JNLP3 protocol.
+ *
+ * @author Akshay Dayal
  */
 public class HandshakeCiphers {
 
@@ -20,7 +22,8 @@ public class HandshakeCiphers {
     private final Cipher encryptCipher;
     private final Cipher decryptCipher;
 
-    HandshakeCiphers(SecretKey secretKey, IvParameterSpec spec, Cipher encryptCipher, Cipher decryptCipher) {
+    HandshakeCiphers(SecretKey secretKey, IvParameterSpec spec, Cipher encryptCipher,
+            Cipher decryptCipher) {
         this.secretKey = secretKey;
         this.spec = spec;
         this.encryptCipher = encryptCipher;
@@ -56,15 +59,16 @@ public class HandshakeCiphers {
     }
 
     /**
-     * Create a pair of ciphers that will be used during the handshake process.
+     * Create a pair of AES symmetric key {@link javax.crypto.Cipher}s that
+     * will be used during the handshake process.
      *
      * <p>The slave name and slave secret are used to create a
      * {@link PBEKeySpec} which is then used to create the ciphers. If a
      * specKey is not provided one will be generated.
      *
-     * <p>The person initiating the handshake would usually let a specKey be
-     * generated and send that to the other participant so they will be able
-     * to create identical ciphers.
+     * <p>The person initiating the handshake would let a specKey be generated
+     * and send that to the other participant so they will be able to create
+     * identical ciphers.
      *
      * @param slaveName The slave for which the handshake is taking place.
      * @param slaveSecret The slave secret.
@@ -87,10 +91,12 @@ public class HandshakeCiphers {
         return new HandshakeCiphers(secretKey, spec, encryptCipher, decryptCipher);
     }
 
-    private static SecretKey generateSecretKey(String slaveName, String slaveSecret) throws Exception {
+    private static SecretKey generateSecretKey(String slaveName, String slaveSecret)
+            throws Exception {
         SecretKeyFactory factory = SecretKeyFactory.getInstance(FACTORY_ALGORITHM);
         KeySpec spec = new PBEKeySpec(
-                slaveSecret.toCharArray(), slaveName.getBytes("UTF-8"), INTEGRATION_COUNT, KEY_LENGTH);
+                slaveSecret.toCharArray(), slaveName.getBytes("UTF-8"),
+                INTEGRATION_COUNT, KEY_LENGTH);
         SecretKey tmpSecret = factory.generateSecret(spec);
         return new SecretKeySpec(tmpSecret.getEncoded(), SPEC_ALGORITHM);
     }

@@ -5,6 +5,8 @@ import java.security.SecureRandom;
 
 /**
  * Cipher related utility methods for JNLP3.
+ *
+ * @author Akshay Dayal
  */
 public class CipherUtils {
 
