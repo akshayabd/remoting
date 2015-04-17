@@ -57,6 +57,14 @@ public class EngineUtil {
         }
     }
 
+    /**
+     * Read a certain amount of characters from the stream.
+     *
+     * @param inputStream The input stream to read from.
+     * @param len The amount of characters to read.
+     * @return The characters read.
+     * @throws IOException
+     */
     public static String readChars(InputStream inputStream, int len) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         for (int i = 0; i < len; i++) {
