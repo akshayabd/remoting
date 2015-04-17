@@ -64,7 +64,6 @@ public class JnlpProtocol3 extends JnlpProtocol {
      */
     private String cookie;
     private ChannelCiphers channelCiphers;
-    private HandshakeCiphers handshakeCiphers;
 
     JnlpProtocol3(String slaveName, String slaveSecret, EngineListenerSplitter events) {
         super(slaveName, slaveSecret, events);
@@ -82,7 +81,7 @@ public class JnlpProtocol3 extends JnlpProtocol {
     @Override
     boolean performHandshake(DataOutputStream outputStream,
             BufferedInputStream inputStream) throws IOException {
-        //HandshakeCiphers handshakeCiphers = null;
+        HandshakeCiphers handshakeCiphers = null;
         try {
             handshakeCiphers = HandshakeCiphers.create(slaveName, slaveSecret, null);
         } catch (Exception e) {
@@ -122,10 +121,8 @@ public class JnlpProtocol3 extends JnlpProtocol {
     @Override
     Channel buildChannel(Socket socket, ChannelBuilder channelBuilder) throws IOException {
         return channelBuilder.build(
-                //new CipherInputStream(socket.getInputStream(), channelCiphers.getDecryptCipher()),
-                //new CipherOutputStream(socket.getOutputStream(), channelCiphers.getEncryptCipher())
-                new CipherInputStream(socket.getInputStream(), handshakeCiphers.decryptCipher),
-                new CipherOutputStream(socket.getOutputStream(), handshakeCiphers.encryptCipher)
+                new CipherInputStream(socket.getInputStream(), channelCiphers.getDecryptCipher()),
+                new CipherOutputStream(socket.getOutputStream(), channelCiphers.getEncryptCipher())
         );
     }
 

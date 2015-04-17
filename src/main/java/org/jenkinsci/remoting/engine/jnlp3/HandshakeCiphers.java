@@ -16,8 +16,8 @@ public class HandshakeCiphers {
 
     private final SecretKey secretKey;
     private final IvParameterSpec spec;
-    public final Cipher encryptCipher;
-    public final Cipher decryptCipher;
+    private final Cipher encryptCipher;
+    private final Cipher decryptCipher;
 
     HandshakeCiphers(SecretKey secretKey, IvParameterSpec spec, Cipher encryptCipher, Cipher decryptCipher) {
         this.secretKey = secretKey;
