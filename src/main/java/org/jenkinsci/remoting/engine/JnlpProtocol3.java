@@ -150,7 +150,13 @@ public class JnlpProtocol3 extends JnlpProtocol {
             return false;
         }
 
-        cookie = EngineUtil.readLine(inputStream);
+        try {
+            cookie = handshakeCiphers.decrypt(EngineUtil.readLine(inputStream));
+        } catch (Exception e) {
+            events.status(NAME + ": Failed to decrypt cookie", e);
+            return false;
+        }
+
         return true;
     }
 
