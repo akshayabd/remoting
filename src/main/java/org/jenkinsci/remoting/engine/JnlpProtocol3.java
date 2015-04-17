@@ -46,10 +46,11 @@ import java.util.Properties;
  *
  * <p>This protocol aims to provide a basic level of security for JNLP based
  * slaves. The handshake process uses a
- * <a href="http://en.wikipedia.org/wiki/Challenge%E2%80%93response_authentication">
+ * <a href="http://en.wikipedia.org/wiki/Challenge%E2%80%93response_authentication#Cryptographic_techniques">
  * challenge-response authentication</a> process so both master and slave can
- * authenticate each other. Once they have authenticated each other an
- * encrypted {@link Channel}.
+ * authenticate each other using a shared secret that isn't transmitted. Once
+ * they have authenticated each other an encrypted {@link Channel} is setup
+ * for further communication.
  *
  * <p>The handshake details are as follows:
  *
@@ -59,26 +60,27 @@ import java.util.Properties;
  * {@link javax.crypto.spec.IvParameterSpec}. These ciphers will be used
  * during the handshake process and will be referred to the handshake ciphers.
  * <li>Slave initiates handshake with the master sending it the slave name,
- * generated {@link javax.crypto.spec.IvParameterSpec} and an encrypted
- * challenge phrase which consists of a small fixed part and a large random
+ * generated IvParameterSpec and an encrypted challenge phrase which consists
+ * of a small fixed part and a large random
  * part.
  * <li>If the master is genuine it can lookup the slave secret for the slave
- * name and construct a matching {@link javax.crypto.Cipher}s using the slave
- * name, slave secret and given {@link javax.crypto.spec.IvParameterSpec}.
+ * name and construct a matching ciphers using the slave name, slave secret
+ * and given IvParameterSpec.
  * <li>The master will decrypt the challenge phrase and check the fixed part
  * matches to verify the identity of the slave. It will then reverse the random
  * part to construct a challenge response. It will encrypt the challenge
  * response and send it to the slave.
  * <li>The slave will decrypt the challenge response to verify the identity
- * of the master. It will then generate a new pair of symmetric key
- * {@link javax.crypto.Cipher}s and send them to the master encrypted using
- * the handshake ciphers. These new ciphers will be used for constructing an
- * encrypted {@link Channel} for future communication.
+ * of the master. It will then generate a new pair of symmetric key ciphers
+ * and send them to the master encrypted using the handshake ciphers.
+ * These new ciphers will be used for constructing an encrypted
+ * {@link Channel} for future communication by both sides.
  * </ul>
  *
  * <p>The handshake does not require the slave secrets be sent over the wire,
  * instead the challenge-response process leverages that if both parties are
- * genuine then they both should have the slave secret.
+ * genuine then they both should have the slave secret which can be used to
+ * construct ciphers.
  *
  * <p>The entire process assumes the slave secret has not been leaked
  * beforehand and the slave obtains it in a secure manner.
